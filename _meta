@@ -1,0 +1,18 @@
+<package project="Mer:Trunk:Base" name="bluez">
+  <title>Bluetooth utilities</title>
+  <description>Utilities for use in Bluetooth applications:
+	--ciptool
+	--dfutool
+	--hcitool
+	--l2ping
+	--rfcomm
+	--sdptool
+	--hciattach
+	--hciconfig
+	--hid2hci
+
+The BLUETOOTH trademarks are owned by Bluetooth SIG, Inc., U.S.A.
+
+</description>
+  <url>http://www.bluez.org/</url>
+</package>
