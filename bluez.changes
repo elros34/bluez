@@ -1,3 +1,7 @@
+* Thu Nov 17 2011 Marko Saukko <marko.saukko@cybercom.com> - 4.96
+- Added 0001-systemd-install-systemd-unit-files.patch from fedora 
+  and removed the old bluetooth.service file.
+
 * Sat Sep 03 2011 Carsten Munk <carsten@maemo.org> - 4.96
 - Drop ofono dependancy, we're wired to telephony=dummy anyway
 

@@ -7,7 +7,6 @@ License: GPLv2+
 URL: http://www.bluez.org/
 Sources:
     - http://www.kernel.org/pub/linux/bluetooth/%{name}-%{version}.tar.gz
-    - bluetooth.service
 Patches:
     - bluez-fsync.patch
     - remove-duplicate-wrong-udev-rule-for-dell-mice.patch
@@ -16,6 +15,7 @@ Patches:
     - install-test-scripts.patch
     - install-more-binary-test.patch
     - disable-hal-plugin.patch
+    - 0001-systemd-install-systemd-unit-files.patch
 Description: |
     Utilities for use in Bluetooth applications:
     	--ciptool
@@ -34,12 +34,6 @@ Requires:
     - bluez-libs = %{version}
     - dbus >= 0.60
     - hwdata >= 0.215
-RequiresPost:
-    - systemd 
-RequiresPreUn:
-    - systemd
-RequiresPostUn:
-    - systemd  
 
 PkgConfigBR:
     - dbus-1
@@ -68,6 +62,8 @@ ConfigOptions:
     - --enable-tools
     - --enable-test
     - --with-telephony=dummy
+    - --with-systemdsystemunitdir=/lib/systemd/system
+
 Builder: make
 SubPackages:
     - Name: libs
