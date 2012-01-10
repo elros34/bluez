@@ -1,12 +1,12 @@
 Name: bluez
 Summary: Bluetooth utilities
-Version: 4.96
+Version: 4.99
 Release: 1
 Group: Applications/System
 License: GPLv2+
 URL: http://www.bluez.org/
 Sources:
-    - http://www.kernel.org/pub/linux/bluetooth/%{name}-%{version}.tar.gz
+    - http://www.kernel.org/pub/linux/bluetooth/%{name}-%{version}.tar.xz
 Patches:
     - bluez-fsync.patch
     - remove-duplicate-wrong-udev-rule-for-dell-mice.patch
@@ -44,7 +44,7 @@ PkgConfigBR:
     - glib-2.0
     - gstreamer-plugins-base-0.10
     - gstreamer-0.10
-
+    - check
 PkgBR:
     - flex
 Configure: reconfigure

@@ -1,3 +1,6 @@
+* Mon May 14 2012 Marko Saukko <sage@merproject.org> - 4.99
+- Updated to version 4.99
+
 * Thu Nov 17 2011 Marko Saukko <marko.saukko@cybercom.com> - 4.96
 - Added 0001-systemd-install-systemd-unit-files.patch from fedora 
   and removed the old bluetooth.service file.

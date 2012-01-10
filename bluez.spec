@@ -7,12 +7,12 @@
 
 Name:       bluez
 Summary:    Bluetooth utilities
-Version:    4.96
+Version:    4.99
 Release:    1
 Group:      Applications/System
 License:    GPLv2+
 URL:        http://www.bluez.org/
-Source0:    http://www.kernel.org/pub/linux/bluetooth/%{name}-%{version}.tar.gz
+Source0:    http://www.kernel.org/pub/linux/bluetooth/%{name}-%{version}.tar.xz
 Source100:  bluez.yaml
 Patch0:     bluez-fsync.patch
 Patch1:     remove-duplicate-wrong-udev-rule-for-dell-mice.patch
@@ -37,6 +37,7 @@ BuildRequires:  pkgconfig(sndfile)
 BuildRequires:  pkgconfig(glib-2.0)
 BuildRequires:  pkgconfig(gstreamer-plugins-base-0.10)
 BuildRequires:  pkgconfig(gstreamer-0.10)
+BuildRequires:  pkgconfig(check)
 BuildRequires:  flex
 
 
@@ -224,6 +225,7 @@ systemctl daemon-reload
 %{_bindir}/pand
 %{_bindir}/rfcomm
 %{_bindir}/sdptool
+%{_bindir}/mpris-player
 %{_sbindir}/*
 %doc %{_mandir}/man1/*
 %doc %{_mandir}/man8/*
