@@ -1,21 +1,19 @@
 Name: bluez
 Summary: Bluetooth utilities
-Version: 4.99
+Version: 4.101
 Release: 1
 Group: Applications/System
 License: GPLv2+
 URL: http://www.bluez.org/
 Sources:
-    - http://www.kernel.org/pub/linux/bluetooth/%{name}-%{version}.tar.xz
+    - http://www.kernel.org/pub/linux/bluetooth/%{name}-%{version}.tar.gz
 Patches:
     - bluez-fsync.patch
     - remove-duplicate-wrong-udev-rule-for-dell-mice.patch
     - enable_HFP.patch
     - powered.patch
-    - install-test-scripts.patch
     - install-more-binary-test.patch
-    - disable-hal-plugin.patch
-    - 0001-systemd-install-systemd-unit-files.patch
+    - install-test-scripts.patch
 Description: |
     Utilities for use in Bluetooth applications:
     	--ciptool
@@ -61,8 +59,9 @@ ConfigOptions:
     - --enable-usb
     - --enable-tools
     - --enable-test
+    - --enable-hal=no
     - --with-telephony=dummy
-    - --with-systemdsystemunitdir=/lib/systemd/system
+    - --with-systemdunitdir=/lib/systemd/system
 
 Builder: make
 SubPackages:
