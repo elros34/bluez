@@ -208,6 +208,7 @@ systemctl daemon-reload
 %{_bindir}/ciptool
 %{_bindir}/dfutool
 %{_bindir}/dund
+%{_bindir}/gatttool
 %{_bindir}/hcitool
 %{_bindir}/hidd
 %{_bindir}/l2ping
