@@ -40,6 +40,7 @@ BuildRequires:  pkgconfig(gstreamer-plugins-base-0.10)
 BuildRequires:  pkgconfig(gstreamer-0.10)
 BuildRequires:  pkgconfig(check)
 BuildRequires:  flex
+BuildRequires:  readline-devel
 
 %description
 Utilities for use in Bluetooth applications:

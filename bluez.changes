@@ -1,3 +1,6 @@
+* Mon Jan 28 2013 Oleg Girko <ol+mer@infoserver.ru> - 4.101
+- Add readline-devel build requirement to build gatttool.
+
 * Tue Jan 22 2013 Oleg Girko <ol+mer@infoserver.ru> - 4.101
 - Fix unpackaged gatttool utility.
 

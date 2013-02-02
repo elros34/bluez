@@ -47,7 +47,7 @@ PkgConfigBR:
     - check
 PkgBR:
     - flex
-
+    - readline-devel
 Configure: reconfigure
 ConfigOptions:
     - --enable-cups
