@@ -1,3 +1,6 @@
+* Mon Feb 04 2013 Pekka Lundstrom <pekka.lundstrom@jollamobile.com> - 4.101
+- Start of the bluetooth moved to network.target MER#674
+
 * Mon Jan 28 2013 Oleg Girko <ol+mer@infoserver.ru> - 4.101
 - Add readline-devel build requirement to build gatttool.
 

@@ -171,8 +171,8 @@ rm -rf %{buildroot}
 %make_install
 
 # >> install post
-mkdir -p $RPM_BUILD_ROOT/%{_lib}/systemd/system/bluetooth.target.wants
-ln -s ../bluetooth.service $RPM_BUILD_ROOT/%{_lib}/systemd/system/bluetooth.target.wants/bluetooth.service
+mkdir -p $RPM_BUILD_ROOT/%{_lib}/systemd/system/network.target.wants
+ln -s ../bluetooth.service $RPM_BUILD_ROOT/%{_lib}/systemd/system/network.target.wants/bluetooth.service
 
 # Remove the cups backend from libdir, and install it in /usr/lib whatever the install
 rm -rf ${RPM_BUILD_ROOT}%{_libdir}/cups
@@ -226,7 +226,7 @@ systemctl daemon-reload
 /%{_lib}/udev/*
 %{_datadir}/dbus-1/system-services/org.bluez.service
 /%{_lib}/systemd/system/bluetooth.service
-/%{_lib}/systemd/system/bluetooth.target.wants/bluetooth.service
+/%{_lib}/systemd/system/network.target.wants/bluetooth.service
 # << files
 
 %files libs
