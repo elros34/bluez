@@ -34,6 +34,7 @@ Requires:
     - bluez-libs = %{version}
     - dbus >= 0.60
     - hwdata >= 0.215
+    - bluez-configs
 
 PkgConfigBR:
     - dbus-1
@@ -112,3 +113,15 @@ SubPackages:
           - bluez-libs = %{version}
           - dbus-python
           - pygobject2
+
+    - Name: doc
+      Summary: Documentation for bluez
+      Group: Documentation
+      Description: This package provides man page documentation for bluez
+
+    - Name: configs-mer
+      Summary: Default configuration for bluez
+      Group: Applications/System
+      Description: This package provides default configs for bluez
+      Provides: 
+          - bluez-configs

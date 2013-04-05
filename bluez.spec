@@ -26,6 +26,7 @@ Patch6:     0001-Adding-snowball-target-and-line-disc.patch
 Requires:   bluez-libs = %{version}
 Requires:   dbus >= 0.60
 Requires:   hwdata >= 0.215
+Requires:   bluez-configs
 Requires:   systemd
 Requires(preun): systemd
 Requires(post): systemd
@@ -116,6 +117,23 @@ Requires:   pygobject2
 
 %description test
 Scripts for testing BlueZ and its functionality
+
+%package doc
+Summary:    Documentation for bluez
+Group:      Documentation
+Requires:   %{name} = %{version}-%{release}
+
+%description doc
+This package provides man page documentation for bluez
+
+%package configs-mer
+Summary:    Default configuration for bluez
+Group:      Applications/System
+Requires:   %{name} = %{version}-%{release}
+Provides:   bluez-configs
+
+%description configs-mer
+This package provides default configs for bluez
 
 
 %prep
@@ -218,9 +236,6 @@ systemctl daemon-reload
 %{_bindir}/sdptool
 %{_bindir}/mpris-player
 %{_sbindir}/*
-%doc %{_mandir}/man1/*
-%doc %{_mandir}/man8/*
-%config(noreplace) %{_sysconfdir}/bluetooth/*
 %config %{_sysconfdir}/dbus-1/system.d/bluetooth.conf
 %{_localstatedir}/lib/bluetooth
 /%{_lib}/udev/*
@@ -284,3 +299,16 @@ systemctl daemon-reload
 %{_bindir}/ipctest
 %{_bindir}/uuidtest
 # << files test
+
+%files doc
+%defattr(-,root,root,-)
+# >> files doc
+%doc %{_mandir}/man1/*
+%doc %{_mandir}/man8/*
+# << files doc
+
+%files configs-mer
+%defattr(-,root,root,-)
+# >> files configs-mer
+%config(noreplace) %{_sysconfdir}/bluetooth/*
+# << files configs-mer

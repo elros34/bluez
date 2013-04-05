@@ -1,3 +1,6 @@
+* Fri Apr 05 2013 Pekka Lundstrom <pekka.lundstrom@jollamobile.com> - 4.101
+- Created new packages, bluez-doc and bluez-configs-mer  Fixes MER#715
+
 * Mon Feb 04 2013 Pekka Lundstrom <pekka.lundstrom@jollamobile.com> - 4.101
 - Start of the bluetooth moved to network.target MER#674
 
