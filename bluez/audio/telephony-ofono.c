@@ -1352,6 +1352,13 @@ static void modem_removed(const char *path)
 
 	g_free(modem_obj_path);
 	modem_obj_path = NULL;
+
+	telephony_update_indicator(ofono_indicators,
+					"roam", EV_ROAM_INACTIVE);
+	telephony_update_indicator(ofono_indicators,
+					"service", EV_SERVICE_NONE);
+	telephony_update_indicator(ofono_indicators, "signal",
+					(net.signals_bar + 20) / 21);
 }
 
 static void parse_modem_interfaces(const char *path, DBusMessageIter *ifaces)
