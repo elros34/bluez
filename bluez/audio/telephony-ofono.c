@@ -878,10 +878,8 @@ static gboolean iter_get_basic_args(DBusMessageIter *iter,
 	return type == DBUS_TYPE_INVALID ? TRUE : FALSE;
 }
 
-static void call_free(void *data)
+static void call_free(struct voice_call *vc)
 {
-	struct voice_call *vc = data;
-
 	DBG("%s", vc->obj_path);
 
 	update_call_status();
@@ -1341,8 +1339,11 @@ static void modem_removed(const char *path)
 
 	DBG("%s", path);
 
-	g_slist_free_full(calls, call_free);
-	calls = NULL;
+	while (calls) {
+		struct voice_call *vc = calls->data;
+		calls = g_slist_remove(calls, vc);
+		call_free(vc);
+	}
 
 	g_free(net.operator_name);
 	net.operator_name = NULL;
