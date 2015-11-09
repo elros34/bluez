@@ -187,19 +187,6 @@ static const char *preferred_vcmanager_path(void)
 	return net ? net->modem_path : NULL;
 }
 
-static gboolean known_vcmanager_path(const char *vcmanager_path)
-{
-	GSList *l;
-
-	for (l = nets; l; l = l->next) {
-		struct net *net = (struct net *)l->data;
-		if (!g_strcmp0(vcmanager_path, net->modem_path))
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 static struct net *net_by_name(const char *path)
 {
 	GSList *l;
@@ -1789,10 +1776,6 @@ static gboolean handle_vcmanager_call_added(DBusConnection *conn,
 	const char *vcmanager_path = dbus_message_get_path(msg);
 
 	audio_wakelock_get();
-
-	/* Ignore call if modem path doesn't match */
-	if (!known_vcmanager_path(vcmanager_path))
-		return TRUE;
 
 	dbus_message_iter_init(msg, &iter);
 
