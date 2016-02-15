@@ -82,7 +82,7 @@ static gchar *last_dialed_number_path = NULL;
 static GSList *calls = NULL;
 static GSList *watches = NULL;
 static GSList *pending = NULL;
-
+static char *preferred_vcmanager = NULL;
 #define OFONO_BUS_NAME "org.ofono"
 #define OFONO_PATH "/"
 #define OFONO_MODEM_INTERFACE "org.ofono.Modem"
@@ -90,6 +90,7 @@ static GSList *pending = NULL;
 #define OFONO_NETWORKREG_INTERFACE "org.ofono.NetworkRegistration"
 #define OFONO_VCMANAGER_INTERFACE "org.ofono.VoiceCallManager"
 #define OFONO_VC_INTERFACE "org.ofono.VoiceCall"
+#define OFONO_NEMO_INTERFACE "org.nemomobile.ofono.ModemManager"
 
 /* HAL battery namespace key values */
 static int battchg_cur = -1;    /* "battery.charge_level.current" */
@@ -180,11 +181,35 @@ static const char *active_vcmanager_path(void)
    (can be the same as active vcamanager) */
 static const char *preferred_vcmanager_path(void)
 {
-	/* TODO: this should follow user preference setting, for now
-	   just use the first one */
+    if (preferred_vcmanager)
+        return preferred_vcmanager;
+
 	struct net *net = nets ? nets->data : NULL;
 	DBG("%s", net ? net->modem_path : "");
 	return net ? net->modem_path : NULL;
+}
+
+
+static gboolean handle_pref_vcmanager_changed(DBusConnection *conn,
+                        DBusMessage *msg, void *data)
+{
+    DBusMessageIter iter;
+    const char *modem = NULL;
+
+    dbus_message_iter_init(msg, &iter);
+    if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
+        error("Unexpected signature in default modem signal");
+        return TRUE;
+    }
+    dbus_message_iter_get_basic(&iter, &modem);
+
+    if (preferred_vcmanager)
+        g_free(preferred_vcmanager);
+
+    preferred_vcmanager = g_strdup(modem);
+    DBG("preferred vcmanager:%s",preferred_vcmanager);
+
+    return TRUE;
 }
 
 static struct net *net_by_name(const char *path)
@@ -1469,6 +1494,49 @@ static int parse_network_properties(struct net *net,
 	return 0;
 }
 
+static void get_default_vcmanager_reply(DBusPendingCall *call, void *user_data)
+{
+    const char *preferred_path = NULL;
+    DBusMessage *reply = dbus_pending_call_steal_reply(call);
+    DBusMessageIter iter;
+    DBusError err;
+
+    dbus_error_init(&err);
+
+    if (dbus_set_error_from_message(&err, reply)) {
+        error("get_default_vcmanager: %s, %s", err.name, err.message);
+        dbus_error_free(&err);
+        goto done;
+    }
+
+    dbus_message_iter_init(reply, &iter);
+    if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
+        error("Unexpected signature in default modem signal");
+        goto done;
+    }
+
+    dbus_message_iter_get_basic(&iter, &preferred_path);
+
+    if (preferred_vcmanager)
+        g_free(preferred_vcmanager);
+
+    preferred_vcmanager = g_strdup(preferred_path);
+    DBG("preferred vcmanager:%s",preferred_vcmanager);
+
+done:
+    dbus_message_unref(reply);
+    remove_pending(call);
+}
+
+static int get_default_vcmanager(void)
+{
+    DBG("");
+
+    return send_method_call(OFONO_BUS_NAME, OFONO_PATH,
+            OFONO_NEMO_INTERFACE, "GetDefaultVoiceModem",
+            get_default_vcmanager_reply, NULL, DBUS_TYPE_INVALID);
+}
+
 static void get_properties_reply(DBusPendingCall *call, void *user_data)
 {
 	DBusError err;
@@ -1499,8 +1567,7 @@ static void get_properties_reply(DBusPendingCall *call, void *user_data)
 	dbus_message_iter_recurse(&iter, &properties);
 
 	n = g_new0(struct net, 1);
-	n->modem_path = vcmanager_path;
-	vcmanager_path = NULL;
+    n->modem_path = g_strdup(vcmanager_path);
 
 	ret = parse_network_properties(n, &properties);
 	if (ret < 0) {
@@ -1526,7 +1593,8 @@ done:
 	remove_pending(call);
 	if (n)
 		net_free(n);
-	g_free(vcmanager_path);
+    g_free((char *)vcmanager_path);
+    vcmanager_path = NULL;
 }
 
 static void network_found(const char *path)
@@ -1602,6 +1670,9 @@ static void parse_modem_interfaces(const char *path, DBusMessageIter *ifaces)
 static void modem_added(const char *path, DBusMessageIter *properties)
 {
 	DBG("%s", path);
+
+    if (preferred_vcmanager == NULL)
+        get_default_vcmanager();
 
 	if (net_by_name(path)) {
 		DBG("Ignoring, modem with given path already exists");
@@ -2181,6 +2252,8 @@ int telephony_init(uint32_t disabled_features, uint32_t disabled_supp_features,
 			"CallAdded", handle_vcmanager_call_added);
 	add_watch(OFONO_BUS_NAME, NULL, OFONO_VCMANAGER_INTERFACE,
 			"CallRemoved", handle_vcmanager_call_removed);
+    add_watch(OFONO_BUS_NAME, NULL, OFONO_NEMO_INTERFACE,
+            "DefaultVoiceModemChanged", handle_pref_vcmanager_changed);
 
 	watch = g_dbus_add_service_watch(connection, OFONO_BUS_NAME,
 						handle_service_connect,
@@ -2254,6 +2327,9 @@ static void pending_free(void *data)
 void telephony_exit(void)
 {
 	DBG("");
+
+    g_free(preferred_vcmanager);
+    preferred_vcmanager = NULL;
 
 	g_free(last_dialed_number);
 	last_dialed_number = NULL;
