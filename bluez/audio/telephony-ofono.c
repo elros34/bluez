@@ -101,7 +101,7 @@ struct net {
 	uint8_t status;
 	uint32_t signals_bar;
 	char *operator_name;
-	const char *modem_path;
+	char *modem_path;
 };
 
 static char *subscriber_number = NULL;
@@ -128,20 +128,11 @@ static struct indicator ofono_indicators[] =
 
 static void update_call_status(void);
 
-static void net_free(gpointer p)
+static void net_free(struct net *n)
 {
-	struct net *n = (struct net *)p;
-	g_free((gpointer)n->modem_path);
+	g_free(n->modem_path);
 	g_free(n->operator_name);
-	memset(n, 0, sizeof(struct net));
 	g_free(n);
-}
-
-static gint net_compare_modem_path(gconstpointer a, gconstpointer b)
-{
-	struct net *na = (struct net *)a;
-	struct net *nb = (struct net *)b;
-	return g_strcmp0(na->modem_path, nb->modem_path);
 }
 
 static struct voice_call *nth_call_at(const char *vcmanager_path,
@@ -164,61 +155,75 @@ static struct voice_call *nth_call_at(const char *vcmanager_path,
 	return NULL;
 }
 
+static struct voice_call *find_vc_with_status(int status)
+{
+	GSList *l;
+
+	for (l = calls; l != NULL; l = l->next) {
+		struct voice_call *vc = l->data;
+
+		if (vc->status == status)
+			return vc;
+	}
+
+	return NULL;
+}
+
 /* Voicecall manager which is the target of call management (placing
-   calls on hold, swapping active and held calls, multiparty call
-   management) */
+ * calls on hold, swapping active and held calls, multiparty call
+ * management) */
 static const char *active_vcmanager_path(void)
 {
-	/* TODO: this should follow audio policy when there is an
-	   active call (return manager for the call which the user is
-	   listening to), for now just use the first one */
-	struct net *net = nets ? nets->data : NULL;
-	DBG("%s", net ? net->modem_path : "");
-	return net ? net->modem_path : NULL;
+	struct voice_call *active = find_vc_with_status(CALL_STATUS_ACTIVE);
+	DBG("%s", active ? active->vcmanager_path : "");
+	return active ? active->vcmanager_path : NULL;
 }
 
 /* Voicecall manager which is preferred for establishing new calls
-   (can be the same as active vcamanager) */
+ * (can be the same as active vcamanager) */
 static const char *preferred_vcmanager_path(void)
 {
-    if (preferred_vcmanager)
-        return preferred_vcmanager;
-
 	struct net *net = nets ? nets->data : NULL;
+
+	if (preferred_vcmanager)
+		return preferred_vcmanager;
+
 	DBG("%s", net ? net->modem_path : "");
 	return net ? net->modem_path : NULL;
 }
 
 
 static gboolean handle_pref_vcmanager_changed(DBusConnection *conn,
-                        DBusMessage *msg, void *data)
+						DBusMessage *msg, void *data)
 {
-    DBusMessageIter iter;
-    const char *modem = NULL;
+	DBusMessageIter iter;
+	const char *modem = NULL;
 
-    dbus_message_iter_init(msg, &iter);
-    if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
-        error("Unexpected signature in default modem signal");
-        return TRUE;
-    }
-    dbus_message_iter_get_basic(&iter, &modem);
+	dbus_message_iter_init(msg, &iter);
+	if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
+		error("Unexpected signature in default modem signal");
+		return TRUE;
+	}
+	dbus_message_iter_get_basic(&iter, &modem);
 
-    if (preferred_vcmanager)
-        g_free(preferred_vcmanager);
+	if (preferred_vcmanager)
+		g_free(preferred_vcmanager);
 
-    preferred_vcmanager = g_strdup(modem);
-    DBG("preferred vcmanager:%s",preferred_vcmanager);
+	preferred_vcmanager = g_strdup(modem);
+	DBG("preferred vcmanager:%s",preferred_vcmanager);
 
-    return TRUE;
+	return TRUE;
 }
 
 static struct net *net_by_name(const char *path)
 {
 	GSList *l;
-	struct net net_key;
-	net_key.modem_path = path;
-	l = g_slist_find_custom(nets, &net_key, net_compare_modem_path);
-	return (struct net *) l ? l->data : NULL;
+	for (l = nets; l; l = g_slist_next(l)) {
+		struct net *net = (struct net *)l->data;
+		if (g_strcmp0(net->modem_path, path) == 0)
+			return net;
+	}
+	return NULL;
 }
 
 static void waiting_for_answer_clear(struct voice_call *vc)
@@ -276,20 +281,6 @@ static struct voice_call *find_vc(const char *path)
 		struct voice_call *vc = l->data;
 
 		if (g_str_equal(vc->obj_path, path))
-			return vc;
-	}
-
-	return NULL;
-}
-
-static struct voice_call *find_vc_with_status(int status)
-{
-	GSList *l;
-
-	for (l = calls; l != NULL; l = l->next) {
-		struct voice_call *vc = l->data;
-
-		if (vc->status == status)
 			return vc;
 	}
 
@@ -379,7 +370,7 @@ void telephony_last_dialed_number_req(void *telephony_device)
 	DBG("telephony-ofono: last dialed number request");
 
 	/* If a path is given, prefer that to the number spied from
-	   ofono signals */
+	 * ofono signals */
 	if (last_dialed_number_path != NULL) {
 		gchar *buf = NULL;
 		GError *err = NULL;
@@ -409,9 +400,9 @@ void telephony_last_dialed_number_req(void *telephony_device)
 }
 
 static int send_method_call(const char *dest, const char *path,
-                                const char *interface, const char *method,
-                                DBusPendingCallNotifyFunction cb,
-                                void *user_data, int type, ...)
+				const char *interface, const char *method,
+				DBusPendingCallNotifyFunction cb,
+				void *user_data, int type, ...)
 {
 	DBusMessage *msg;
 	DBusPendingCall *call;
@@ -661,9 +652,9 @@ void telephony_dial_number_req(void *telephony_device, const char *number)
 	}
 
 	/* Block other memory dialing; more proper would be to wait for
-	   ofono D-Bus reply, but I think that'd need audio device
-	   refcounting so that it doesn't potentially disappear while
-	   we wait for D-Bus reply. */
+	 * ofono D-Bus reply, but I think that'd need audio device
+	 * refcounting so that it doesn't potentially disappear while
+	 * we wait for D-Bus reply. */
 	if (*number == '>') {
 		telephony_dial_number_rsp(telephony_device,
 					CME_ERROR_AG_FAILURE);
@@ -697,7 +688,7 @@ void telephony_dial_number_req(void *telephony_device, const char *number)
 
 	ret = send_method_call(OFONO_BUS_NAME, preferred_vcmanager_path(),
 			OFONO_VCMANAGER_INTERFACE,
-                        "Dial", NULL, NULL,
+			"Dial", NULL, NULL,
 			DBUS_TYPE_STRING, &number,
 			DBUS_TYPE_STRING, &clir,
 			DBUS_TYPE_INVALID);
@@ -806,12 +797,11 @@ static void foreach_vc_with_status_at(const char *vcmanager_path,
 
 static cme_error_t chld0(const char *vcmanager_path)
 {
-	/* HFP 1.5 documentation on AT+CHLD:
-
-	   "0 = Releases all held calls or sets User Determined User
-	   Busy (UDUB) for a waiting call."
-
-	*/
+	/*
+	 * HFP 1.5 documentation on AT+CHLD:
+	 * "0 = Releases all held calls or sets User Determined User
+	 * Busy (UDUB) for a waiting call."
+	 */
 
 	if (find_vc_with_status_at(vcmanager_path, CALL_STATUS_WAITING))
 		foreach_vc_with_status_at(vcmanager_path,
@@ -827,14 +817,12 @@ static cme_error_t chld0(const char *vcmanager_path)
 
 static cme_error_t chld1(const char *vcmanager_path, struct voice_call *call)
 {
-	/* HFP 1.5 documentation on AT+CHLD:
-
-	   "1 = Releases all active calls (if any exist) and accepts
-	   the other (held or waiting) call.
-
-	   1<idx> = Releases specified active call only (<idx>)."
-
-	*/
+	/*
+	 * HFP 1.5 documentation on AT+CHLD:
+	 * "1 = Releases all active calls (if any exist) and accepts
+	 * the other (held or waiting) call.
+	 * 1<idx> = Releases specified active call only (<idx>)."
+	 */
 
 	if (call) {
 		if (release_call(call) != 0)
@@ -856,16 +844,14 @@ static cme_error_t chld1(const char *vcmanager_path, struct voice_call *call)
 
 static cme_error_t chld2(const char *vcmanager_path, struct voice_call *call)
 {
-	/* HFP 1.5 documentation on AT+CHLD:
-
-	   "2 = Places all active calls (if any exist) on hold and accepts
-	   the other (held or waiting) call.
-
-	   2<idx> = Request private consultation mode with specified
-	   call (<idx>).  (Place all calls on hold EXCEPT the call
-	   indicated by <idx>.)"
-
-	*/
+	/*
+	 * HFP 1.5 documentation on AT+CHLD:
+	 * "2 = Places all active calls (if any exist) on hold and accepts
+	 * the other (held or waiting) call.
+	 * 2<idx> = Request private consultation mode with specified
+	 * call (<idx>).  (Place all calls on hold EXCEPT the call
+	 * indicated by <idx>.)"
+	 */
 
 	if (call) {
 		if (split_call(call) != 0)
@@ -888,11 +874,10 @@ static cme_error_t chld2(const char *vcmanager_path, struct voice_call *call)
 
 static cme_error_t chld3(const char *vcmanager_path)
 {
-	/* HFP 1.5 documentation on AT+CHLD:
-
-	   "3 = Adds a held call to the conversation."
-
-	*/
+	/*
+	 * HFP 1.5 documentation on AT+CHLD:
+	 * "3 = Adds a held call to the conversation."
+	 */
 
 	if (!(telephony_supp_features & AG_FEATURE_SUPP_CONF_CALL))
 		return CME_ERROR_NOT_SUPPORTED;
@@ -910,12 +895,11 @@ static cme_error_t chld3(const char *vcmanager_path)
 
 static cme_error_t chld4(const char *vcmanager_path)
 {
-	/* HFP 1.5 documentation on AT+CHLD:
-
-	   "Connects the two calls and disconnects the subscriber from
-	   both calls (Explicit Call Transfer)."
-
-	*/
+	/*
+	 * HFP 1.5 documentation on AT+CHLD:
+	 * "Connects the two calls and disconnects the subscriber from
+	 * both calls (Explicit Call Transfer)."
+	 */
 
 	if (!(telephony_supp_features & AG_FEATURE_SUPP_CONF_CALL))
 		return CME_ERROR_NOT_SUPPORTED;
@@ -1153,7 +1137,6 @@ static gboolean dial_after_hold(gpointer data)
 	g_free(d->hold_dial_clir);
 	g_free(d->hold_dial_number);
 	g_free(d->vcmanager_path);
-	memset(d, 0, sizeof(struct dial));
 	g_free(d);
 
 	return FALSE;
@@ -1243,7 +1226,8 @@ static gboolean handle_vc_property_changed(DBusConnection *conn,
 	return TRUE;
 }
 
-static struct voice_call *call_new(const char *path, const char *vcmanager_path, DBusMessageIter *properties)
+static struct voice_call *call_new(const char *path, const char *vcmanager_path,
+					DBusMessageIter *properties)
 {
 	struct voice_call *vc;
 
@@ -1496,45 +1480,45 @@ static int parse_network_properties(struct net *net,
 
 static void get_default_vcmanager_reply(DBusPendingCall *call, void *user_data)
 {
-    const char *preferred_path = NULL;
-    DBusMessage *reply = dbus_pending_call_steal_reply(call);
-    DBusMessageIter iter;
-    DBusError err;
+	const char *preferred_path = NULL;
+	DBusMessage *reply = dbus_pending_call_steal_reply(call);
+	DBusMessageIter iter;
+	DBusError err;
 
-    dbus_error_init(&err);
+	dbus_error_init(&err);
 
-    if (dbus_set_error_from_message(&err, reply)) {
-        error("get_default_vcmanager: %s, %s", err.name, err.message);
-        dbus_error_free(&err);
-        goto done;
-    }
+	if (dbus_set_error_from_message(&err, reply)) {
+		error("get_default_vcmanager: %s, %s", err.name, err.message);
+		dbus_error_free(&err);
+		goto done;
+	}
 
-    dbus_message_iter_init(reply, &iter);
-    if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
-        error("Unexpected signature in default modem signal");
-        goto done;
-    }
+	dbus_message_iter_init(reply, &iter);
+	if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_STRING) {
+		error("Unexpected signature in default modem signal");
+		goto done;
+	}
 
-    dbus_message_iter_get_basic(&iter, &preferred_path);
+	dbus_message_iter_get_basic(&iter, &preferred_path);
 
-    if (preferred_vcmanager)
-        g_free(preferred_vcmanager);
+	if (preferred_vcmanager)
+		g_free(preferred_vcmanager);
 
-    preferred_vcmanager = g_strdup(preferred_path);
-    DBG("preferred vcmanager:%s",preferred_vcmanager);
+	preferred_vcmanager = g_strdup(preferred_path);
+	DBG("preferred vcmanager:%s",preferred_vcmanager);
 
 done:
-    dbus_message_unref(reply);
-    remove_pending(call);
+	dbus_message_unref(reply);
+	remove_pending(call);
 }
 
 static int get_default_vcmanager(void)
 {
-    DBG("");
+	DBG("");
 
-    return send_method_call(OFONO_BUS_NAME, OFONO_PATH,
-            OFONO_NEMO_INTERFACE, "GetDefaultVoiceModem",
-            get_default_vcmanager_reply, NULL, DBUS_TYPE_INVALID);
+	return send_method_call(OFONO_BUS_NAME, OFONO_PATH,
+		OFONO_NEMO_INTERFACE, "GetDefaultVoiceModem",
+		get_default_vcmanager_reply, NULL, DBUS_TYPE_INVALID);
 }
 
 static void get_properties_reply(DBusPendingCall *call, void *user_data)
@@ -1567,7 +1551,7 @@ static void get_properties_reply(DBusPendingCall *call, void *user_data)
 	dbus_message_iter_recurse(&iter, &properties);
 
 	n = g_new0(struct net, 1);
-    n->modem_path = g_strdup(vcmanager_path);
+	n->modem_path = g_strdup(vcmanager_path);
 
 	ret = parse_network_properties(n, &properties);
 	if (ret < 0) {
@@ -1591,10 +1575,11 @@ static void get_properties_reply(DBusPendingCall *call, void *user_data)
 done:
 	dbus_message_unref(reply);
 	remove_pending(call);
+
 	if (n)
 		net_free(n);
-    g_free((char *)vcmanager_path);
-    vcmanager_path = NULL;
+
+	g_free(user_data);
 }
 
 static void network_found(const char *path)
@@ -1621,20 +1606,17 @@ static void modem_removed(const char *path)
 
 	pref = net_by_name(preferred_vcmanager_path());
 
-	for (l = calls; l;) {
-		GSList *n = l->next;
+	for (l = calls; l; l = g_slist_next(l)) {
 		struct voice_call *c = l->data;
 		if (!g_strcmp0(c->vcmanager_path, path)) {
 			calls = g_slist_remove(calls, c);
 			call_free(c);
 		}
-		l = n;
 	}
 
 	net = net_by_name(path);
 	if (net) {
 		nets = g_slist_remove(nets, net);
-		net_free(net);
 
 		if (!pref || pref == net) {
 			telephony_update_indicator(ofono_indicators,
@@ -1644,6 +1626,7 @@ static void modem_removed(const char *path)
 			telephony_update_indicator(ofono_indicators, "signal",
 						0);
 		}
+		net_free(net);
 	}
 }
 
@@ -1671,8 +1654,8 @@ static void modem_added(const char *path, DBusMessageIter *properties)
 {
 	DBG("%s", path);
 
-    if (preferred_vcmanager == NULL)
-        get_default_vcmanager();
+	if (preferred_vcmanager == NULL)
+		get_default_vcmanager();
 
 	if (net_by_name(path)) {
 		DBG("Ignoring, modem with given path already exists");
@@ -2252,8 +2235,8 @@ int telephony_init(uint32_t disabled_features, uint32_t disabled_supp_features,
 			"CallAdded", handle_vcmanager_call_added);
 	add_watch(OFONO_BUS_NAME, NULL, OFONO_VCMANAGER_INTERFACE,
 			"CallRemoved", handle_vcmanager_call_removed);
-    add_watch(OFONO_BUS_NAME, NULL, OFONO_NEMO_INTERFACE,
-            "DefaultVoiceModemChanged", handle_pref_vcmanager_changed);
+	add_watch(OFONO_BUS_NAME, NULL, OFONO_NEMO_INTERFACE,
+		"DefaultVoiceModemChanged", handle_pref_vcmanager_changed);
 
 	watch = g_dbus_add_service_watch(connection, OFONO_BUS_NAME,
 						handle_service_connect,
@@ -2328,8 +2311,8 @@ void telephony_exit(void)
 {
 	DBG("");
 
-    g_free(preferred_vcmanager);
-    preferred_vcmanager = NULL;
+	g_free(preferred_vcmanager);
+	preferred_vcmanager = NULL;
 
 	g_free(last_dialed_number);
 	last_dialed_number = NULL;
