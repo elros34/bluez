@@ -294,6 +294,11 @@ builtin_modules += jolla_logcontrol
 builtin_sources += plugins/jolla-logcontrol.c
 endif
 
+if JOLLAVOICECALLPLUGIN
+builtin_modules += jolla_voicecall
+builtin_sources += plugins/jolla-voicecall.c
+endif
+
 if MAINTAINER_MODE
 plugin_LTLIBRARIES += plugins/external-dummy.la
 plugins_external_dummy_la_SOURCES = plugins/external-dummy.c
@@ -327,7 +332,8 @@ src_bluetoothd_SOURCES = $(gdbus_sources) $(builtin_sources) \
 			src/dbus-common.c src/dbus-common.h \
 			src/event.h src/event.c \
 			src/oob.h src/oob.c src/eir.h src/eir.c \
-			src/wakelock.h src/wakelock.c
+			src/wakelock.h src/wakelock.c \
+			src/voicecall.h src/voicecall.c
 src_bluetoothd_LDADD = lib/libbluetooth-private.la @GLIB_LIBS@ @DBUS_LIBS@ \
 								-ldl -lrt
 src_bluetoothd_LDFLAGS = $(AM_LDFLAGS) -Wl,--export-dynamic \

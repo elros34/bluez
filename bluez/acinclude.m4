@@ -207,6 +207,7 @@ AC_DEFUN([AC_ARG_BLUEZ], [
 	jolla_did=no
 	jolla_wakelock=no
 	jolla_logcontrol=no
+	jolla_voicecall=no
 
 	AC_ARG_ENABLE(optimization, AC_HELP_STRING([--disable-optimization], [disable code optimization]), [
 		optimization_enable=${enableval}
@@ -359,6 +360,10 @@ AC_DEFUN([AC_ARG_BLUEZ], [
 		jolla_logcontrol_enable=${enableval}
 	])
 
+	AC_ARG_ENABLE(jolla_voicecall, AC_HELP_STRING([--enable-jolla-voicecall], [compile with Jolla voicecall plugin]), [
+		jolla_voicecall_enable=${enableval}
+	])
+
 	misc_cflags=""
 	misc_ldflags=""
 
@@ -426,4 +431,5 @@ AC_DEFUN([AC_ARG_BLUEZ], [
 	AM_CONDITIONAL(JOLLADIDPLUGIN, test "${jolla_did_enable}" = "yes")
 	AM_CONDITIONAL(JOLLAWAKELOCKPLUGIN, test "${jolla_wakelock_enable}" = "yes")
 	AM_CONDITIONAL(JOLLALOGCONTROLPLUGIN, test "${jolla_logcontrol_enable}" = "yes")
+	AM_CONDITIONAL(JOLLAVOICECALLPLUGIN, test "${jolla_voicecall_enable}" = "yes")
 ])

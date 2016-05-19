@@ -46,6 +46,7 @@
 
 #include "log.h"
 #include "telephony.h"
+#include "voicecall.h"
 #include "main.h"
 
 enum net_registration_status {
@@ -660,6 +661,11 @@ void telephony_dial_number_req(void *telephony_device, const char *number)
 					CME_ERROR_AG_FAILURE);
 		return;
 	}
+
+        /* Try voicecall agent */
+        if (!voicecall_dial(number)) {
+            return;
+        }
 
 	if (!strncmp(number, "*31#", 4)) {
 		number += 4;
