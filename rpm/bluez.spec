@@ -167,7 +167,8 @@ Will enable tracing for BlueZ
     --enable-gatt \
     --enable-jolla-did \
     --enable-jolla-wakelock \
-    --enable-jolla-logcontrol
+    --enable-jolla-logcontrol \
+    --enable-jolla-voicecall
 
 make %{?jobs:-j%jobs}
 
