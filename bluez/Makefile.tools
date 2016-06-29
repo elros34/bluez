@@ -7,7 +7,7 @@ endif
 bin_PROGRAMS += tools/rfcomm tools/l2ping \
 				tools/hcitool tools/sdptool tools/ciptool
 
-sbin_PROGRAMS += tools/hciattach tools/hciconfig
+sbin_PROGRAMS += tools/hciattach tools/hciconfig tools/hci_lescan_params
 
 noinst_PROGRAMS += tools/avinfo tools/ppporc \
 				tools/hcieventmask tools/hcisecfilter
@@ -35,6 +35,9 @@ tools_hciattach_LDADD = lib/libbluetooth-private.la
 tools_hciconfig_SOURCES = tools/hciconfig.c tools/csr.h tools/csr.c \
 						src/textfile.h src/textfile.c
 tools_hciconfig_LDADD = lib/libbluetooth-private.la
+
+tools_hci_lescan_params_SOURCES = tools/hci_lescan_params.c
+tools_hci_lescan_params_LDADD = lib/libbluetooth-private.la
 
 tools_hcitool_SOURCES = tools/hcitool.c src/oui.h src/oui.c \
 						src/textfile.h src/textfile.c
