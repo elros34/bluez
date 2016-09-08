@@ -34,8 +34,6 @@ BuildRequires:  pkgconfig(alsa)
 BuildRequires:  pkgconfig(udev)
 BuildRequires:  pkgconfig(sndfile)
 BuildRequires:  pkgconfig(glib-2.0)
-BuildRequires:  pkgconfig(gstreamer-plugins-base-0.10)
-BuildRequires:  pkgconfig(gstreamer-0.10)
 BuildRequires:  pkgconfig(check)
 BuildRequires:  bison
 BuildRequires:  flex
@@ -94,15 +92,6 @@ Requires:   bluez-libs = %{version}
 %description alsa
 This package contains ALSA support for Bluetooth audio devices
 
-%package gstreamer
-Summary:    GStreamer support for SBC audio format
-Group:      System/Daemons
-Requires:   %{name} = %{version}-%{release}
-Requires:   bluez-libs = %{version}
-
-%description gstreamer
-This package contains gstreamer plugins for the Bluetooth SBC audio format
-
 %package test
 Summary:    Test Programs for BlueZ
 Group:      Development/Tools
@@ -155,7 +144,7 @@ Will enable tracing for BlueZ
     --enable-hidd \
     --enable-pand \
     --enable-dund \
-    --enable-gstreamer \
+    --disable-gstreamer \
     --enable-alsa \
     --enable-usb \
     --enable-tools \
@@ -274,12 +263,6 @@ systemctl daemon-reload ||:
 %{_libdir}/alsa-lib/*.so
 %{_datadir}/alsa/bluetooth.conf
 # << files alsa
-
-%files gstreamer
-%defattr(-,root,root,-)
-# >> files gstreamer
-%{_libdir}/gstreamer-*/*.so
-# << files gstreamer
 
 %files test
 %defattr(-,root,root,-)
