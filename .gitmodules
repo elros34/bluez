@@ -1,3 +1,3 @@
 [submodule "bluez"]
 	path = upstream
-	url = https://git.kernel.org/pub/scm/bluetooth/bluez.git
+	url = https://git.merproject.org/mirror/bluez.git
