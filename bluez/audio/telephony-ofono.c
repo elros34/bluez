@@ -662,10 +662,9 @@ void telephony_dial_number_req(void *telephony_device, const char *number)
 		return;
 	}
 
-        /* Try voicecall agent */
-        if (!voicecall_dial(number)) {
-            return;
-        }
+	/* Try voicecall agent */
+	if ((ret = voicecall_dial(number)) != -ENOENT)
+		goto dialed;
 
 	if (!strncmp(number, "*31#", 4)) {
 		number += 4;
@@ -698,6 +697,8 @@ void telephony_dial_number_req(void *telephony_device, const char *number)
 			DBUS_TYPE_STRING, &number,
 			DBUS_TYPE_STRING, &clir,
 			DBUS_TYPE_INVALID);
+
+dialed:
 
 	if (ret < 0)
 		telephony_dial_number_rsp(telephony_device,
