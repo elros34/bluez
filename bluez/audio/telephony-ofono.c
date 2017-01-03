@@ -829,7 +829,7 @@ static cme_error_t chld0(const char *vcmanager_path)
 						CALL_STATUS_HELD,
 						release_call);
 
-	return 0;
+	return CME_ERROR_NONE;
 }
 
 static cme_error_t chld1(const char *vcmanager_path, struct voice_call *call)
@@ -856,7 +856,7 @@ static cme_error_t chld1(const char *vcmanager_path, struct voice_call *call)
 		}
 	}
 
-	return 0;
+	return CME_ERROR_NONE;
 }
 
 static cme_error_t chld2(const char *vcmanager_path, struct voice_call *call)
@@ -886,7 +886,7 @@ static cme_error_t chld2(const char *vcmanager_path, struct voice_call *call)
 		}
 	}
 
-	return 0;
+	return CME_ERROR_NONE;
 }
 
 static cme_error_t chld3(const char *vcmanager_path)
@@ -907,7 +907,7 @@ static cme_error_t chld3(const char *vcmanager_path)
 		return CME_ERROR_NOT_ALLOWED;
 	}
 
-	return 0;
+	return CME_ERROR_NONE;
 }
 
 static cme_error_t chld4(const char *vcmanager_path)
@@ -929,7 +929,7 @@ static cme_error_t chld4(const char *vcmanager_path)
 		return CME_ERROR_NOT_ALLOWED;
 	}
 
-	return 0;
+	return CME_ERROR_NONE;
 }
 
 void telephony_call_hold_req(void *telephony_device, const char *cmd)
