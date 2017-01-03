@@ -176,8 +176,18 @@ static struct voice_call *find_vc_with_status(int status)
 static const char *active_vcmanager_path(void)
 {
 	struct voice_call *active = find_vc_with_status(CALL_STATUS_ACTIVE);
-	DBG("%s", active ? active->vcmanager_path : "");
-	return active ? active->vcmanager_path : NULL;
+	if (active && active->vcmanager_path)
+		return active->vcmanager_path;
+
+	active = find_vc_with_status(CALL_STATUS_HELD);
+	if (active && active->vcmanager_path)
+		return active->vcmanager_path;
+
+	active = find_vc_with_status(CALL_STATUS_WAITING);
+	if (active && active->vcmanager_path)
+		return active->vcmanager_path;
+
+	return NULL;
 }
 
 /* Voicecall manager which is preferred for establishing new calls
@@ -932,6 +942,7 @@ void telephony_call_hold_req(void *telephony_device, const char *cmd)
 	DBG("telephony-ofono: got call hold request %s", cmd);
 
 	vcmanager_path = active_vcmanager_path();
+	DBG("%s", vcmanager_path ? vcmanager_path : "");
 	if (!vcmanager_path) {
 		cme_err = CME_ERROR_AG_FAILURE;
 		goto done;
