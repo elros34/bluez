@@ -2750,11 +2750,13 @@ static int parse_line(char *str)
 	char *off, *end;
 
 	pskey = strtol(str + 1, NULL, 16);
-	off = strstr(str, "=") + 1;
+	off = strstr(str, "=");
 	if (!off)
 		return -EIO;
 
-	while (1) {
+	off++;
+
+	while (length <= sizeof(array) - 2) {
 		value = strtol(off, &end, 16);
 		if (value == 0 && off == end)
 			break;
