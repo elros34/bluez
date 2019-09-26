@@ -296,7 +296,7 @@ systemctl daemon-reload ||:
 %files configs-mer
 %defattr(-,root,root,-)
 # >> files configs-mer
-%config(noreplace) %{_sysconfdir}/bluetooth/*
+%config %{_sysconfdir}/bluetooth/*
 # << files configs-mer
 
 %files tracing
