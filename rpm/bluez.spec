@@ -5,7 +5,6 @@ Name:       bluez
 Summary:    Bluetooth utilities
 Version:    4.101
 Release:    1
-Group:      Applications/System
 License:    GPLv2+
 URL:        http://www.bluez.org/
 Source0:    http://www.kernel.org/pub/linux/bluetooth/%{name}-%{version}.tar.gz
@@ -49,7 +48,6 @@ The BLUETOOTH trademarks are owned by Bluetooth SIG, Inc., U.S.A.
 
 %package libs
 Summary:    Libraries for use in Bluetooth applications
-Group:      System/Libraries
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
@@ -58,7 +56,6 @@ Libraries for use in Bluetooth applications.
 
 %package libs-devel
 Summary:    Development libraries for Bluetooth applications
-Group:      Development/Libraries
 Requires:   bluez-libs = %{version}
 
 %description libs-devel
@@ -68,7 +65,6 @@ use in Bluetooth applications.
 
 %package cups
 Summary:    CUPS printer backend for Bluetooth printers
-Group:      System/Daemons
 Requires:   %{name} = %{version}-%{release}
 Requires:   bluez-libs = %{version}
 Requires:   cups
@@ -78,7 +74,6 @@ This package contains the CUPS backend
 
 %package alsa
 Summary:    ALSA support for Bluetooth audio devices
-Group:      System/Daemons
 Requires:   %{name} = %{version}-%{release}
 Requires:   bluez-libs = %{version}
 
@@ -87,7 +82,6 @@ This package contains ALSA support for Bluetooth audio devices
 
 %package test
 Summary:    Test Programs for BlueZ
-Group:      Development/Tools
 Requires:   %{name} = %{version}-%{release}
 Requires:   bluez-libs = %{version}
 Requires:   dbus-python
@@ -98,7 +92,6 @@ Scripts for testing BlueZ and its functionality
 
 %package doc
 Summary:    Documentation for bluez
-Group:      Documentation
 Requires:   %{name} = %{version}-%{release}
 
 %description doc
@@ -106,7 +99,6 @@ This package provides man page documentation for bluez
 
 %package configs-mer
 Summary:    Default configuration for bluez
-Group:      Applications/System
 Requires:   %{name} = %{version}-%{release}
 Provides:   bluez-configs
 
@@ -115,7 +107,6 @@ This package provides default configs for bluez
 
 %package tracing
 Summary:    Configuration for bluez to enable tracing
-Group:      Development/Tools
 Requires:   %{name} = %{version}-%{release}
 
 %description tracing
