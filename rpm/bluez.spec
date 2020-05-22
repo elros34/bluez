@@ -142,7 +142,7 @@ Will enable tracing for BlueZ
     --enable-test \
     --enable-hal=no \
     --with-telephony=ofono \
-    --with-systemdunitdir=/lib/systemd/system \
+    --with-systemdunitdir=%{_unitdir} \
     --enable-jolla-dbus-access \
     --enable-gatt \
     --enable-jolla-did \
@@ -157,15 +157,15 @@ make %{?jobs:-j%jobs}
 rm -rf %{buildroot}
 %make_install
 
-mkdir -p $RPM_BUILD_ROOT/%{_lib}/systemd/system/network.target.wants
-ln -s ../bluetooth.service $RPM_BUILD_ROOT/%{_lib}/systemd/system/network.target.wants/bluetooth.service
-(cd $RPM_BUILD_ROOT/%{_lib}/systemd/system && ln -s bluetooth.service dbus-org.bluez.service)
+mkdir -p ${RPM_BUILD_ROOT}%{_unitdir}/network.target.wants
+ln -s ../bluetooth.service ${RPM_BUILD_ROOT}%{_unitdir}/network.target.wants/bluetooth.service
+(cd ${RPM_BUILD_ROOT}%{_unitdir} && ln -s bluetooth.service dbus-org.bluez.service)
 
 # Remove the cups backend from libdir, and install it in /usr/lib whatever the install
 rm -rf ${RPM_BUILD_ROOT}%{_libdir}/cups
 install -D -m 0755 cups/bluetooth ${RPM_BUILD_ROOT}/usr/lib/cups/backend/bluetooth
 
-install -d -m 0755 $RPM_BUILD_ROOT/%{_localstatedir}/lib/bluetooth
+install -d -m 0755 ${RPM_BUILD_ROOT}%{_localstatedir}/lib/bluetooth
 
 # Install configuration files
 for CONFFILE in audio input network serial ; do
@@ -175,7 +175,8 @@ done
 mkdir -p %{buildroot}%{_sysconfdir}/tracing/bluez/
 cp -a %{SOURCE1} %{buildroot}%{_sysconfdir}/tracing/bluez/
 
-
+# there is no macro for /lib/udev afaict
+%define udevlibdir /lib/udev
 
 %pre
 %_system_groupadd bluetooth
@@ -213,11 +214,12 @@ systemctl daemon-reload ||:
 %{_sbindir}/*
 %config %{_sysconfdir}/dbus-1/system.d/bluetooth.conf
 %{_localstatedir}/lib/bluetooth
-/%{_lib}/udev/*
+%{_udevrulesdir}/*
+%{udevlibdir}/hid2hci
 %{_datadir}/dbus-1/system-services/org.bluez.service
-/%{_lib}/systemd/system/bluetooth.service
-/%{_lib}/systemd/system/network.target.wants/bluetooth.service
-/%{_lib}/systemd/system/dbus-org.bluez.service
+%{_unitdir}/bluetooth.service
+%{_unitdir}/network.target.wants/bluetooth.service
+%{_unitdir}/dbus-org.bluez.service
 
 %files libs
 %defattr(-,root,root,-)
