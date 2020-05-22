@@ -153,8 +153,9 @@ ln -s ../bluetooth.service ${RPM_BUILD_ROOT}%{_unitdir}/network.target.wants/blu
 (cd ${RPM_BUILD_ROOT}%{_unitdir} && ln -s bluetooth.service dbus-org.bluez.service)
 
 # Remove the cups backend from libdir, and install it in /usr/lib whatever the install
+%define cups_backend_dir /usr/lib/cups/backend
 rm -rf ${RPM_BUILD_ROOT}%{_libdir}/cups
-install -D -m 0755 cups/bluetooth ${RPM_BUILD_ROOT}/usr/lib/cups/backend/bluetooth
+install -D -m 0755 cups/bluetooth ${RPM_BUILD_ROOT}%{cups_backend_dir}/bluetooth
 
 install -d -m 0755 ${RPM_BUILD_ROOT}%{_localstatedir}/lib/bluetooth
 
@@ -226,7 +227,7 @@ systemctl daemon-reload ||:
 
 %files cups
 %defattr(-,root,root,-)
-%{_libdir}/cups/backend/bluetooth
+%{cups_backend_dir}/bluetooth
 
 %files alsa
 %defattr(-,root,root,-)
