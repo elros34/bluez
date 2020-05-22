@@ -59,8 +59,8 @@ Summary:    Development libraries for Bluetooth applications
 Requires:   bluez-libs = %{version}
 
 %description libs-devel
-bluez-libs-devel contains development libraries and headers for
-use in Bluetooth applications.
+This package contains development libraries and headers for use in
+Bluetooth applications.
 
 
 %package cups
