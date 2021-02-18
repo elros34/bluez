@@ -200,15 +200,7 @@ static int adaptername_probe(struct btd_adapter *adapter)
 {
 	int current_id;
 	char name[MAX_NAME_LENGTH + 1];
-	char *pretty_hostname;
 	bdaddr_t bdaddr;
-
-	pretty_hostname = read_pretty_host_name();
-	if (pretty_hostname != NULL) {
-		set_pretty_name(adapter, pretty_hostname);
-		g_free(pretty_hostname);
-		return 0;
-	}
 
 	adapter_set_allow_name_changes(adapter, TRUE);
 	adapter_get_address(adapter, &bdaddr);
